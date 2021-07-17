@@ -4,7 +4,7 @@ const LOG = new Logger("Reducer");
 
 function getInitialState() {
     let initialState = {
-
+        message: "Hello World"
     };
     return initialState;
 }
