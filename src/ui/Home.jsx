@@ -2,6 +2,6 @@ import { useSelector } from "react-redux";
 
 function Home(props) {
     const message = useSelector(state => state.message);
-    return <div>{message}</div>;
+    return <h1>{message}</h1>;
 }
 export default Home;
