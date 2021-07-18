@@ -2,7 +2,7 @@ import './App.css';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Container, Row, Col, Navbar, Nav } from 'react-bootstrap';
-import Store from './services/Store';
+import Store from './redux/Store';
 import Home from './ui/Home';
 import Libraries from './ui/Libraries';
 import Redux from './ui/Redux';

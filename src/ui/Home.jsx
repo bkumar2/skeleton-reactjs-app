@@ -1,7 +1,14 @@
+import { Card } from "react-bootstrap";
+
 function Home(props) {
-    return <div>
-        <h1>Welcome to <small className="text-muted">Sekeleton ReactJS App</small></h1>
-        <p>It comes with all important library integrations that will give you a headstart.</p>
-    </div>;
+    return <Card>
+        <Card.Header>Skeleton ReactJS App</Card.Header>
+        <Card.Body>
+            <Card.Title>Welcome!</Card.Title>
+            <Card.Text>
+                This skeleton App comes with all important library integrations and sample snippets that will give you a headstart.
+            </Card.Text>
+        </Card.Body>
+    </Card>;
 }
 export default Home;
