@@ -1,7 +1,7 @@
-import { useSelector } from "react-redux";
-
 function Home(props) {
-    const message = useSelector(state => state.message);
-    return <h1>{message}</h1>;
+    return <div>
+        <h1>Welcome to <small className="text-muted">Sekeleton ReactJS App</small></h1>
+        <p>It comes with all important library integrations that will give you a headstart.</p>
+    </div>;
 }
 export default Home;

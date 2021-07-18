@@ -1,9 +1,11 @@
 import './App.css';
 import { Provider } from 'react-redux';
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import { Container, Row, Col, Button, Alert } from 'react-bootstrap';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { Container, Row, Col, Navbar, Nav } from 'react-bootstrap';
 import Store from './services/Store';
 import Home from './ui/Home';
+import Libraries from './ui/Libraries';
+import Redux from './ui/Redux';
 
 function App() {
   return (
@@ -11,24 +13,22 @@ function App() {
       <Router>
         <Container>
           <Row>
-            <Col md="auto">
-              <Link to="/">Home</Link>
-            </Col>
-            <Col md="auto">
-              <Link to="/button">Button</Link>
-            </Col>
-            <Col md="auto">
-              <Link to="/alert">Alert</Link>
-            </Col>
+            <Navbar bg="light" expand="lg">
+              <Nav className="mr-auto my-2 my-lg-0" style={{ maxHeight: '100px' }}>
+                <Nav.Link href="/">Home</Nav.Link>
+                <Nav.Link href="/libraries">Libraries</Nav.Link>
+                <Nav.Link href="/redux">Redux</Nav.Link>
+              </Nav>
+            </Navbar>
           </Row>
           <Row>
             <Col>
               <Switch>
-                <Route path="/button">
-                  <Button>Hello World</Button>
+                <Route path="/libraries">
+                  <Libraries />
                 </Route>
-                <Route path="/alert">
-                  <Alert variant="primary">Hello World</Alert>
+                <Route path="/redux">
+                  <Redux />
                 </Route>
                 <Route path="/">
                   <Home />
@@ -38,7 +38,7 @@ function App() {
           </Row>
         </Container>
       </Router>
-    </Provider>
+    </Provider >
   );
 }
 
