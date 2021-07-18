@@ -6,7 +6,7 @@ function Home(props) {
         <Card.Body>
             <Card.Title>Welcome!</Card.Title>
             <Card.Text>
-                This skeleton App comes with all important library integrations and sample snippets that will give you a headstart.
+                This skeleton App comes with all important libraries pre-integrated and with sample snippets that will get you started.
             </Card.Text>
         </Card.Body>
     </Card>;

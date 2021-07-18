@@ -1,16 +1,58 @@
 import { ListGroup } from "react-bootstrap";
+import DataTable from 'react-data-table-component';
+
+const data = [
+    {
+        name: "React Router",
+        link: "https://reactrouter.com/web/guides/quick-start"
+    },
+    {
+        name: "React Redux",
+        link: "https://react-redux.js.org/introduction/getting-started"
+    },
+    {
+        name: "React Bootstrap",
+        link: "https://react-bootstrap.github.io/getting-started/introduction/"
+    },
+    {
+        name: "React Data Table Component",
+        link: "https://github.com/jbetancur/react-data-table-component"
+    },
+    {
+        name: "Axios",
+        link: "https://axios-http.com/docs/intro"
+    },
+    {
+        name: "MomentJS",
+        link: "https://momentjs.com/docs/"
+    },
+    {
+        name: "Styled Components",
+        link: "https://styled-components.com/docs/basics"
+    },
+]
+
+const columns = [
+    {
+        name: 'Name',
+        selector: row => row.name,
+        sortable: true,
+    },
+    {
+        name: 'Link',
+        selector: row => row.link,
+        grow: 2,
+        cell: row => <a href={row.link}>{row.link}</a>
+    },
+]
 
 function Libraries(props) {
     return <div>
-        <h1>Libraries</h1>
-        <ListGroup>
-            <ListGroup.Item>React Router</ListGroup.Item>
-            <ListGroup.Item>React Redux</ListGroup.Item>
-            <ListGroup.Item>React Bootstrap</ListGroup.Item>
-            <ListGroup.Item>React Data Table Component</ListGroup.Item>
-            <ListGroup.Item>Axios</ListGroup.Item>
-            <ListGroup.Item>MomentJS</ListGroup.Item>
-        </ListGroup>
+        <DataTable
+            title="Libraries"
+            columns={columns}
+            data={data}
+        />
     </div>;
 }
 export default Libraries;
