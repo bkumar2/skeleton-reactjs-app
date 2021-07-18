@@ -5,7 +5,7 @@ import { Container, Row, Col, Navbar, Nav } from 'react-bootstrap';
 import Store from './redux/Store';
 import Home from './ui/Home';
 import Libraries from './ui/Libraries';
-import Redux from './ui/Redux';
+import ReduxDemo from './ui/ReduxDemo';
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
               <Nav className="mr-auto my-2 my-lg-0" style={{ maxHeight: '100px' }}>
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/libraries">Libraries</Nav.Link>
-                <Nav.Link href="/redux">Redux</Nav.Link>
+                <Nav.Link href="/redux-demo">Redux Demo</Nav.Link>
               </Nav>
             </Navbar>
           </Row>
@@ -27,8 +27,8 @@ function App() {
                 <Route path="/libraries">
                   <Libraries />
                 </Route>
-                <Route path="/redux">
-                  <Redux />
+                <Route path="/redux-demo">
+                  <ReduxDemo />
                 </Route>
                 <Route path="/">
                   <Home />

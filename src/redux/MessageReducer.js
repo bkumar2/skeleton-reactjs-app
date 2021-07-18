@@ -6,27 +6,22 @@ import Logger from "../utils/Logger";
 const LOG = new Logger("MessageReducer");
 
 export const messageSlice = createSlice({
-    name: 'message',
+    name: 'MessageReducer',
     initialState: {
-        value: "Hello World!",
-        text: "",
+        value: "Hello World!"
     },
     reducers: {
-        updateMessage: (localState) => {
-            LOG.info("Updating message.");
-            localState.value = localState.text === "" ? "Hello World!" : "Hello " + localState.text + "!";
-        },
-        updateText: (localState, action) => {
-            LOG.info("Text", action.payload);
-            localState.text = action.payload;
+        updateMessage: (localState, action) => {
+            let message = action.payload;
+            LOG.info("Updating message:", message);
+            localState.value = (message === "" ? "Hello World!" : "Hello " + message + "!");
         }
     },
 })
 
 // Action creators are generated for each case reducer function
 export const {
-    updateMessage,
-    updateText
+    updateMessage
 } = messageSlice.actions;
 
 export default messageSlice.reducer;
