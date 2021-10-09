@@ -6,6 +6,7 @@ import Store from './redux/Store';
 import Home from './ui/Home';
 import Libraries from './ui/Libraries';
 import ReduxDemo from './ui/ReduxDemo';
+import FormDemo from './ui/FormDemo';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/libraries">Libraries</Nav.Link>
                 <Nav.Link href="/redux-demo">Redux Demo</Nav.Link>
+                <Nav.Link href="/form-demo">Form Demo</Nav.Link>
               </Nav>
             </Navbar>
           </Row>
@@ -29,6 +31,9 @@ function App() {
                 </Route>
                 <Route path="/redux-demo">
                   <ReduxDemo />
+                </Route>
+                <Route path="/form-demo">
+                  <FormDemo />
                 </Route>
                 <Route path="/">
                   <Home />

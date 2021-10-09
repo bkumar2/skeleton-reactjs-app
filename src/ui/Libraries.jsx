@@ -1,4 +1,3 @@
-import { ListGroup } from "react-bootstrap";
 import DataTable from 'react-data-table-component';
 
 const data = [
@@ -49,7 +48,7 @@ const columns = [
 function Libraries(props) {
     return <div>
         <DataTable
-            title="Libraries"
+            title="Libraries (DataTable Demo)"
             columns={columns}
             data={data}
         />
