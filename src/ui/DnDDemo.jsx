@@ -1,22 +1,36 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 
 function DragDropItem(props) {
+    const divRef = useRef(null);
+    const [hoverPosition, setHoverPosition] = useState(0);
     let ITEM = { index: props.index, text: props.text };
-    console.log("ITEM", ITEM);
 
     const [{ isOver }, drop] = useDrop(
         () => ({
             accept: "item",
-            drop: (item) => {
-                console.log("received drop of:", item.index, item.text);
-                props.onDrop(item, ITEM);
+            drop: (droppedItem) => {
+                console.log("received drop of:", droppedItem.index, droppedItem.text);
+                props.onDrop(droppedItem, ITEM);
+            },
+            hover: (hoverItem, monitor) => {
+                let hoverItemOffsetY = monitor.getClientOffset().y;
+                let currentItemOffsetY = divRef.current.offsetTop;
+                const HEIGHT = divRef.current.clientHeight;
+                let yDiff = hoverItemOffsetY - currentItemOffsetY;
+                if (yDiff > 0 && yDiff < HEIGHT) {
+                    if (yDiff < HEIGHT / 2 && yDiff !== 1) {
+                        setHoverPosition(1);
+                    } else {
+                        setHoverPosition(-1);
+                    }
+                }
             },
             collect: (monitor) => ({
                 isOver: !!monitor.isOver(),
             }),
         }),
-        [ITEM]
+        [ITEM, divRef]
     );
 
     const [collected, drag] = useDrag(
@@ -27,30 +41,31 @@ function DragDropItem(props) {
         [ITEM]
     );
 
+    drag(drop(divRef));
+
     return (
-        <div ref={drop}>
-            <div
-                id={props.index}
-                ref={drag}
-                style={{
-                    backgroundColor: isOver ? "gray" : "white",
-                    borderTop: isOver ? "3px yellow solid" : null,
-                    color: "black",
-                    cursor: "pointer",
-                    padding: "0 1em",
-                    fontSize: "2em",
-                    margin: "0.5em",
-                }}
-            >
-                {props.text}
-            </div>
+        <div
+            ref={divRef}
+            id={props.index}
+            style={{
+                backgroundColor: isOver ? "gray" : "white",
+                border: "none",
+                borderTop: isOver && hoverPosition === 1 ? "3px yellow solid" : null,
+                borderBottom: isOver && hoverPosition === -1 ? "3px yellow solid" : null,
+                color: "black",
+                cursor: "pointer",
+                padding: "0 1em",
+                fontSize: "2em",
+                margin: "0.5em",
+            }}
+        >
+            {props.text}
         </div>
     );
 }
 
 function DnDDemo(props) {
     const [array, setArray] = useState(["A", "B", "C", "D", "E"]);
-    console.log("array", array);
     return (
         <div
             style={{
@@ -65,14 +80,8 @@ function DnDDemo(props) {
                     text={arrayElement}
                     key={index}
                     onDrop={(topItem, bottomItem) => {
-                        console.log("dropped", topItem, "on", bottomItem);
                         let newArray = [...array];
                         newArray.splice(topItem.index, 1);
-                        console.log(
-                            "newArray remove",
-                            topItem.index,
-                            topItem.text
-                        );
                         newArray.splice(
                             topItem.index < bottomItem.index
                                 ? bottomItem.index - 1
@@ -80,14 +89,6 @@ function DnDDemo(props) {
                             0,
                             topItem.text
                         );
-                        console.log(
-                            "newArray insert",
-                            topItem.index < bottomItem.index
-                                ? bottomItem.index - 1
-                                : bottomItem.index,
-                            topItem.text
-                        );
-                        console.log("newArray", newArray);
                         setArray(newArray);
                     }}
                 />
