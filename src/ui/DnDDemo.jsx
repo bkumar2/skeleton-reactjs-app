@@ -76,16 +76,25 @@ function DragDropItem(props) {
             ref={divRef}
             id={props.index}
             style={{
-                opacity: props.dragging || (props.dragIndex === -1 && isDragging) ? 0 : 1,
-                backgroundColor: "white",
-                color: "black",
-                cursor: "pointer",
-                padding: "0 1em",
-                fontSize: "2em",
-                borderTop: "1px solid black",
+                cursor: "move",
+                margin: "0.5em 0",
+                border:
+                    props.dragging || (props.dragIndex === -1 && isDragging)
+                        ? "1px dotted white"
+                        : null,
             }}
         >
-            {props.text}
+            <div
+                style={{
+                    opacity: props.dragging || (props.dragIndex === -1 && isDragging) ? 0.5 : 1,
+                    backgroundColor: "white",
+                    color: "black",
+                    padding: "0 1em",
+                    fontSize: "2em",
+                }}
+            >
+                {props.text}
+            </div>
         </div>
     );
 }
