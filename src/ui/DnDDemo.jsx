@@ -10,7 +10,6 @@ function DragDropItem(props) {
             accept: "item",
             drop: (droppedItem) => {
                 console.log("received drop of:", droppedItem, " on:", ITEM);
-                props.onDrop();
             },
             hover: (hoverItem, monitor) => {
                 if (!divRef.current) {
@@ -63,6 +62,9 @@ function DragDropItem(props) {
             collect: (monitor) => ({
                 isDragging: monitor.isDragging(),
             }),
+            end: () => {
+                props.onDrop();
+            },
         }),
         [ITEM]
     );
@@ -74,13 +76,13 @@ function DragDropItem(props) {
             ref={divRef}
             id={props.index}
             style={{
-                opacity: props.dragging ? 0 : 1,
+                opacity: props.dragging || (props.dragIndex === -1 && isDragging) ? 0 : 1,
                 backgroundColor: "white",
                 color: "black",
                 cursor: "pointer",
                 padding: "0 1em",
                 fontSize: "2em",
-                margin: "0.5em",
+                borderTop: "1px solid black",
             }}
         >
             {props.text}
@@ -91,7 +93,7 @@ function DragDropItem(props) {
 function DnDDemo(props) {
     const [array, setArray] = useState(["A", "B", "C", "D", "E"]);
     const [dragIndex, setDragIndex] = useState(-1);
-    console.log("array", array);
+    console.log("array:", array, " dragIndex:", dragIndex);
     return (
         <div
             style={{
@@ -105,8 +107,12 @@ function DnDDemo(props) {
                     index={index}
                     text={arrayElement}
                     key={index}
+                    dragIndex={dragIndex}
                     dragging={dragIndex === index}
-                    onDrop={() => setDragIndex(-1)}
+                    onDrop={() => {
+                        console.log("Item dropped");
+                        setDragIndex(-1);
+                    }}
                     onSwap={(topItem, bottomItem) => {
                         console.log("swapping topItem:", topItem, " bottomItem:", bottomItem);
                         let newArray = [...array];
