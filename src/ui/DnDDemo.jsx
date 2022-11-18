@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
+import { Col, Container, Row } from "react-bootstrap";
 import { useDrag, useDrop } from "react-dnd";
 
 function DragDropItem(props) {
     const divRef = useRef(null);
-    let ITEM = { index: props.index, text: props.text };
+    let ITEM = { index: props.index, text: props.text, arrayIndex: props.arrayIndex };
 
     const [, drop] = useDrop(
         () => ({
@@ -15,30 +16,59 @@ function DragDropItem(props) {
                 if (!divRef.current) {
                     return;
                 }
-                const dragIndex = hoverItem.index;
-                const hoverIndex = ITEM.index;
+                const hoverItemArrayIndex = hoverItem.arrayIndex;
+                const bottomItemArrayIndex = ITEM.arrayIndex;
+                const hoverItemIndex = hoverItem.index;
+                const bottomItemIndex = ITEM.index;
                 // Don't replace items with themselves
-                if (dragIndex === hoverIndex) {
+                if (
+                    hoverItemArrayIndex === bottomItemArrayIndex &&
+                    hoverItemIndex === bottomItemIndex
+                )
                     return;
-                }
+
                 // Determine rectangle on screen
-                const hoverBoundingRect = divRef.current?.getBoundingClientRect();
+                const bottomItemBoundingRect = divRef.current?.getBoundingClientRect();
                 // Get vertical middle
-                const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+                const bottomeItemMiddleY =
+                    (bottomItemBoundingRect.bottom - bottomItemBoundingRect.top) / 2;
                 // Determine mouse position
-                const clientOffset = monitor.getClientOffset();
+                const mousePointerOffset = monitor.getClientOffset();
                 // Get pixels to the top
-                const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+                const mousePointerYDiff = mousePointerOffset.y - bottomItemBoundingRect.top;
                 // Only perform the move when the mouse has crossed half of the items height
                 // When dragging downwards, only move when the cursor is below 50%
                 // When dragging upwards, only move when the cursor is above 50%
-                // Dragging downwards
-                if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-                    return;
-                }
-                // Dragging upwards
-                if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-                    return;
+                // If same array
+                if (hoverItemArrayIndex === bottomItemArrayIndex) {
+                    // Dragging downwards
+                    if (
+                        hoverItemIndex < bottomItemIndex &&
+                        mousePointerYDiff < bottomeItemMiddleY
+                    ) {
+                        return;
+                    }
+                    // Dragging upwards
+                    if (
+                        hoverItemIndex > bottomItemIndex &&
+                        mousePointerYDiff > bottomeItemMiddleY
+                    ) {
+                        return;
+                    }
+                    props.onSwap(hoverItem, ITEM);
+                    hoverItem.index = bottomItemIndex;
+                } else {
+                    // Insert Above
+                    if (mousePointerYDiff < bottomeItemMiddleY) {
+                        props.onInsert(hoverItem, ITEM, 0);
+                        hoverItem.index = bottomItemIndex;
+                    }
+                    // Insert Below
+                    else {
+                        props.onInsert(hoverItem, ITEM, 1);
+                        hoverItem.index = bottomItemIndex + 1;
+                    }
+                    hoverItem.arrayIndex = bottomItemArrayIndex;
                 }
                 // Time to actually perform the action
                 // console.log("swap top", hoverItem, "bottom", ITEM);
@@ -48,8 +78,6 @@ function DragDropItem(props) {
                 // but it's good here for the sake of performance
                 // to avoid expensive index searches.
                 // hoverItem.index = hoverIndex;
-                props.onSwap(hoverItem, ITEM);
-                hoverItem.index = hoverIndex;
             },
         }),
         [ITEM, divRef]
@@ -74,9 +102,12 @@ function DragDropItem(props) {
     return (
         <div
             ref={divRef}
-            id={props.index}
             style={{
-                opacity: props.dragging || (props.dragIndex === -1 && isDragging) ? 0.5 : 1,
+                opacity:
+                    props.dragging ||
+                    (props.dragIndex[0] === -1 && props.dragIndex[1] === -1 && isDragging)
+                        ? 0.5
+                        : 1,
                 backgroundColor: "white",
                 color: "black",
                 cursor: "pointer",
@@ -91,40 +122,79 @@ function DragDropItem(props) {
 }
 
 function DnDDemo(props) {
-    const [array, setArray] = useState(["A", "B", "C", "D", "E"]);
-    const [dragIndex, setDragIndex] = useState(-1);
-    console.log("array:", array, " dragIndex:", dragIndex);
+    const [arrays, setArrays] = useState([
+        ["A", "B", "C", "D", "E"],
+        ["1", "2", "3", "4", "5"],
+    ]);
+    const [dragIndex, setDragIndex] = useState([-1, -1]);
+    console.log("arrays:", arrays, " dragIndex:", dragIndex);
     return (
-        <div
-            style={{
-                backgroundColor: "black",
-                width: "50%",
-                padding: "0.5em",
-            }}
-        >
-            {array.map((arrayElement, index) => (
-                <DragDropItem
-                    index={index}
-                    text={arrayElement}
-                    key={index}
-                    dragIndex={dragIndex}
-                    dragging={dragIndex === index}
-                    onDrop={() => {
-                        console.log("Item dropped");
-                        setDragIndex(-1);
-                    }}
-                    onSwap={(topItem, bottomItem) => {
-                        console.log("swapping topItem:", topItem, " bottomItem:", bottomItem);
-                        let newArray = [...array];
-                        let tempItem = newArray[topItem.index];
-                        newArray[topItem.index] = newArray[bottomItem.index];
-                        newArray[bottomItem.index] = tempItem;
-                        setDragIndex(bottomItem.index);
-                        setArray(newArray);
-                    }}
-                />
-            ))}
-        </div>
+        <Container>
+            <Row
+                style={{
+                    backgroundColor: "black",
+                    padding: "0.5em 0",
+                }}
+            >
+                {arrays.map((array, i) => (
+                    <Col key={i}>
+                        {array.map((arrayElement, index) => (
+                            <DragDropItem
+                                arrayIndex={i}
+                                index={index}
+                                text={arrayElement}
+                                key={index}
+                                dragIndex={dragIndex}
+                                dragging={dragIndex[0] === i && dragIndex[1] === index}
+                                onDrop={() => {
+                                    console.log("Item dropped");
+                                    setDragIndex([-1, -1]);
+                                }}
+                                onSwap={(topItem, bottomItem) => {
+                                    console.log(
+                                        "swapping topItem:",
+                                        topItem,
+                                        " bottomItem:",
+                                        bottomItem
+                                    );
+                                    let newArray = [...array];
+                                    let tempItem = newArray[topItem.index];
+                                    newArray[topItem.index] = newArray[bottomItem.index];
+                                    newArray[bottomItem.index] = tempItem;
+                                    setDragIndex([bottomItem.arrayIndex, bottomItem.index]);
+                                    let newArrays = [...arrays];
+                                    newArrays[i] = newArray;
+                                    setArrays(newArrays);
+                                }}
+                                onInsert={(topItem, bottomItem, level) => {
+                                    console.log(
+                                        "Inserting topItem:",
+                                        topItem,
+                                        " bottomItem:",
+                                        bottomItem,
+                                        " level:",
+                                        level
+                                    );
+                                    let newTopItemArray = [...arrays[topItem.arrayIndex]];
+                                    let newBottomItemArray = [...arrays[bottomItem.arrayIndex]];
+                                    newTopItemArray.splice(topItem.index, 1);
+                                    newBottomItemArray.splice(
+                                        bottomItem.index + level,
+                                        0,
+                                        topItem.text
+                                    );
+                                    let newArrays = [...arrays];
+                                    newArrays[topItem.arrayIndex] = newTopItemArray;
+                                    newArrays[bottomItem.arrayIndex] = newBottomItemArray;
+                                    setArrays(newArrays);
+                                    setDragIndex([bottomItem.arrayIndex, bottomItem.index + level]);
+                                }}
+                            />
+                        ))}
+                    </Col>
+                ))}
+            </Row>
+        </Container>
     );
 }
 export default DnDDemo;
