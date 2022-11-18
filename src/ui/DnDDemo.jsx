@@ -110,7 +110,7 @@ function DragDropItem(props) {
                         : 1,
                 backgroundColor: "white",
                 color: "black",
-                cursor: "pointer",
+                cursor: "move",
                 padding: "0 1em",
                 fontSize: "2em",
                 borderTop: "1px solid black",
@@ -125,6 +125,7 @@ function DnDDemo(props) {
     const [arrays, setArrays] = useState([
         ["A", "B", "C", "D", "E"],
         ["1", "2", "3", "4", "5"],
+        ["a", "b", "c", "d", "e"],
     ]);
     const [dragIndex, setDragIndex] = useState([-1, -1]);
     console.log("arrays:", arrays, " dragIndex:", dragIndex);
