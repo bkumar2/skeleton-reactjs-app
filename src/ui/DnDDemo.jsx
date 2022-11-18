@@ -2,91 +2,64 @@ import { useRef, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { useDrag, useDrop } from "react-dnd";
 
+const move = (topItem, bottomItem, swapFn, insertFn, divRef, monitor) => {
+    if (!divRef.current) return;
+    const hoverItemArrayIndex = topItem.dnd.arrayIndex;
+    const bottomItemArrayIndex = bottomItem.dnd.arrayIndex;
+    const hoverItemIndex = topItem.dnd.index;
+    const bottomItemIndex = bottomItem.dnd.index;
+    // Don't replace items with themselves
+    if (hoverItemArrayIndex === bottomItemArrayIndex && hoverItemIndex === bottomItemIndex) return;
+    // Determine rectangle on screen
+    const bottomItemBoundingRect = divRef.current?.getBoundingClientRect();
+    // Get vertical middle
+    const bottomeItemMiddleY = (bottomItemBoundingRect.bottom - bottomItemBoundingRect.top) / 2;
+    // Determine mouse position
+    const mousePointerOffset = monitor.getClientOffset();
+    // Get pixels to the top
+    const mousePointerYDiff = mousePointerOffset.y - bottomItemBoundingRect.top;
+    // If same array, swap if required
+    if (hoverItemArrayIndex === bottomItemArrayIndex) {
+        // no action till mouse cross half w.r.t downwards or upwards drag
+        if (
+            (hoverItemIndex < bottomItemIndex && mousePointerYDiff < bottomeItemMiddleY) ||
+            (hoverItemIndex > bottomItemIndex && mousePointerYDiff > bottomeItemMiddleY)
+        )
+            return;
+        swapFn(topItem, bottomItem);
+        topItem.dnd.index = bottomItemIndex;
+    }
+    // If different array, insert above or below
+    else {
+        let level = mousePointerYDiff < bottomeItemMiddleY ? 0 : 1;
+        insertFn(topItem, bottomItem, level);
+        topItem.dnd.index = bottomItemIndex + level;
+        topItem.dnd.arrayIndex = bottomItemArrayIndex;
+    }
+};
+
 function DragDropItem(props) {
+    const ITEM_TYPE = "ArrayElement";
     const divRef = useRef(null);
-    let ITEM = { index: props.index, text: props.text, arrayIndex: props.arrayIndex };
+    let currentDragDropItem = {
+        dnd: { arrayIndex: props.arrayIndex, index: props.index },
+        data: props.text,
+    };
 
     const [, drop] = useDrop(
         () => ({
-            accept: "item",
-            drop: (droppedItem) => {
-                console.log("received drop of:", droppedItem, " on:", ITEM);
-            },
+            accept: ITEM_TYPE,
             hover: (hoverItem, monitor) => {
-                if (!divRef.current) {
-                    return;
-                }
-                const hoverItemArrayIndex = hoverItem.arrayIndex;
-                const bottomItemArrayIndex = ITEM.arrayIndex;
-                const hoverItemIndex = hoverItem.index;
-                const bottomItemIndex = ITEM.index;
-                // Don't replace items with themselves
-                if (
-                    hoverItemArrayIndex === bottomItemArrayIndex &&
-                    hoverItemIndex === bottomItemIndex
-                )
-                    return;
-
-                // Determine rectangle on screen
-                const bottomItemBoundingRect = divRef.current?.getBoundingClientRect();
-                // Get vertical middle
-                const bottomeItemMiddleY =
-                    (bottomItemBoundingRect.bottom - bottomItemBoundingRect.top) / 2;
-                // Determine mouse position
-                const mousePointerOffset = monitor.getClientOffset();
-                // Get pixels to the top
-                const mousePointerYDiff = mousePointerOffset.y - bottomItemBoundingRect.top;
-                // Only perform the move when the mouse has crossed half of the items height
-                // When dragging downwards, only move when the cursor is below 50%
-                // When dragging upwards, only move when the cursor is above 50%
-                // If same array
-                if (hoverItemArrayIndex === bottomItemArrayIndex) {
-                    // Dragging downwards
-                    if (
-                        hoverItemIndex < bottomItemIndex &&
-                        mousePointerYDiff < bottomeItemMiddleY
-                    ) {
-                        return;
-                    }
-                    // Dragging upwards
-                    if (
-                        hoverItemIndex > bottomItemIndex &&
-                        mousePointerYDiff > bottomeItemMiddleY
-                    ) {
-                        return;
-                    }
-                    props.onSwap(hoverItem, ITEM);
-                    hoverItem.index = bottomItemIndex;
-                } else {
-                    // Insert Above
-                    if (mousePointerYDiff < bottomeItemMiddleY) {
-                        props.onInsert(hoverItem, ITEM, 0);
-                        hoverItem.index = bottomItemIndex;
-                    }
-                    // Insert Below
-                    else {
-                        props.onInsert(hoverItem, ITEM, 1);
-                        hoverItem.index = bottomItemIndex + 1;
-                    }
-                    hoverItem.arrayIndex = bottomItemArrayIndex;
-                }
-                // Time to actually perform the action
-                // console.log("swap top", hoverItem, "bottom", ITEM);
-                // props.onSwap(hoverItem, ITEM);
-                // Note: we're mutating the monitor item here!
-                // Generally it's better to avoid mutations,
-                // but it's good here for the sake of performance
-                // to avoid expensive index searches.
-                // hoverItem.index = hoverIndex;
+                move(hoverItem, currentDragDropItem, props.onSwap, props.onInsert, divRef, monitor);
             },
         }),
-        [ITEM, divRef]
+        [currentDragDropItem, divRef]
     );
 
     const [{ isDragging }, drag] = useDrag(
         () => ({
-            type: "item",
-            item: ITEM,
+            type: ITEM_TYPE,
+            item: currentDragDropItem,
             collect: (monitor) => ({
                 isDragging: monitor.isDragging(),
             }),
@@ -94,7 +67,7 @@ function DragDropItem(props) {
                 props.onDrop();
             },
         }),
-        [ITEM]
+        [currentDragDropItem]
     );
 
     drag(drop(divRef));
@@ -159,10 +132,10 @@ function DnDDemo(props) {
                                         bottomItem
                                     );
                                     let newArray = [...array];
-                                    let tempItem = newArray[topItem.index];
-                                    newArray[topItem.index] = newArray[bottomItem.index];
-                                    newArray[bottomItem.index] = tempItem;
-                                    setDragIndex([bottomItem.arrayIndex, bottomItem.index]);
+                                    let tempItem = newArray[topItem.dnd.index];
+                                    newArray[topItem.dnd.index] = newArray[bottomItem.dnd.index];
+                                    newArray[bottomItem.dnd.index] = tempItem;
+                                    setDragIndex([bottomItem.dnd.arrayIndex, bottomItem.dnd.index]);
                                     let newArrays = [...arrays];
                                     newArrays[i] = newArray;
                                     setArrays(newArrays);
@@ -176,19 +149,22 @@ function DnDDemo(props) {
                                         " level:",
                                         level
                                     );
-                                    let newTopItemArray = [...arrays[topItem.arrayIndex]];
-                                    let newBottomItemArray = [...arrays[bottomItem.arrayIndex]];
-                                    newTopItemArray.splice(topItem.index, 1);
+                                    let newTopItemArray = [...arrays[topItem.dnd.arrayIndex]];
+                                    let newBottomItemArray = [...arrays[bottomItem.dnd.arrayIndex]];
+                                    newTopItemArray.splice(topItem.dnd.index, 1);
                                     newBottomItemArray.splice(
-                                        bottomItem.index + level,
+                                        bottomItem.dnd.index + level,
                                         0,
-                                        topItem.text
+                                        topItem.data
                                     );
                                     let newArrays = [...arrays];
-                                    newArrays[topItem.arrayIndex] = newTopItemArray;
-                                    newArrays[bottomItem.arrayIndex] = newBottomItemArray;
+                                    newArrays[topItem.dnd.arrayIndex] = newTopItemArray;
+                                    newArrays[bottomItem.dnd.arrayIndex] = newBottomItemArray;
                                     setArrays(newArrays);
-                                    setDragIndex([bottomItem.arrayIndex, bottomItem.index + level]);
+                                    setDragIndex([
+                                        bottomItem.dnd.arrayIndex,
+                                        bottomItem.dnd.index + level,
+                                    ]);
                                 }}
                             />
                         ))}
